@@ -1,0 +1,26 @@
+voronoi=zeros(256,256);
+b=zeros(16,2);
+voronoicolor=zeros(256,256);
+for c=1:16
+    a=randi([1 256],1,2);
+    b(c,1)=a(1,1);
+    b(c,2)=a(1,2);
+end
+
+[imax, jmax]=size(voronoi);
+for i=1:imax
+    for j=1:jmax
+        d=sqrt(256^2+256^2);
+        for g=1:16
+            e=(sqrt((i-b(g,1))^2+(j-b(g,2))^2));
+            if e<d
+                d=e;
+                color=g;
+            end
+        end
+        voronoicolor(i,j)=color;
+    end
+end
+X=1:256;
+Y=1:256;
+s = mesh(X,Y,voronoicolor);
