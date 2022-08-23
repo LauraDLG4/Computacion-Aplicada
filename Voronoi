@@ -24,3 +24,4 @@ end
 X=1:256;
 Y=1:256;
 s = mesh(X,Y,voronoicolor);
+s.FaceColor = 'flat';
