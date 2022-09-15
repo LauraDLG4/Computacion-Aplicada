@@ -1,0 +1,43 @@
+import numpy as np
+import sympy
+
+m = int(input("Introduzca la dimensión de la matriz cuadrada deseada, debe ser entre 3 y 20: "))
+while m > 20 or m <3: 
+    print ("Valor incorrecto, debe ser entre 3 y 20")
+    m = int(input("Introduzca la dimensión de la matriz cuadrada deseada, recuerda debe ser entre 3 y 20: "))
+
+matriz = np.zeros((m,m))
+
+primlist=list(sympy.primerange(0,(10000)))
+
+p=0
+for i in range (m):
+    for j in range (m):
+        matriz[i][j]= primlist[p]
+        p=p+1
+        
+#suma
+suma= 0
+a=0
+for i in range (0,m):
+    for j in range (0,(m-a)):
+        suma= suma + matriz[i][j+a]
+    a=a+1
+
+#matriz impresa sin corchetes
+imprimir = ""
+for i in range (0,m):
+    for j in range (0,m):
+        imprimir = imprimir +str(int(matriz[i][j]))
+        if matriz[i][j]<10:
+            imprimir = imprimir+ "     "
+        elif matriz[i][j] >10 and matriz[i][j]<100:
+            imprimir = imprimir+ "    "
+        elif matriz[i][j] >100 and matriz[i][j]<1000:
+            imprimir = imprimir+ "   "
+        elif matriz[i][j] >1000 and matriz[i][j]<10000:
+            imprimir = imprimir+ "  " 
+    imprimir = imprimir+"\n"
+
+print (imprimir)
+print("La suma de los elementos de la diagonal superior es: ", suma)
