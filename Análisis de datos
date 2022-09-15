@@ -1,0 +1,19 @@
+ma= mean(altura)
+mc= mean(calzado)
+sa= std(altura)
+sc= std(calzado)
+
+xa = 130:1:220;
+ya = 1/sqrt(2*pi*sa^2)*exp(-(xa-ma).^2/(2*sa^2));
+plot(xa, ya)
+sum (ya)
+
+xc = 19:0.2:34;
+yc = 1/sqrt(2*pi*sc^2)*exp(-(xc-mc).^2/(2*sc^2));
+plot(xc, yc)
+sum (yc)
+
+za1= ((ma-sa)-ma)/sa
+za2= ((ma+sa)-ma)/sa
+Pa=0.8413-0.1587
+
