@@ -9,13 +9,11 @@ plot(xa, ya)
 edgesa= 130:10:200;
 histogram(altura, edgesa)
 
-normpdf(calzado, mc, sc)
+xc = 19:0.2:34;
+yc=normpdf(xc, mc, sc);
+plot(xc, yc)
 edgesc= 20:1:30;
 histogram(calzado, edgesc)
-
-%xc = 19:0.2 :34;
-%yc = 1/sqrt(2*pi*sc^2)*exp(-(xc-mc).^2/(2*sc^2));
-%plot(xc, yc)
 
 za1= ((ma-sa)-ma)/sa
 za2= ((ma+sa)-ma)/sa
