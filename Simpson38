@@ -1,0 +1,20 @@
+import math
+
+def f(x):
+    f=(math.sin(4*x))*(math.exp(-2*x))
+    return f
+
+def simpson38(a,b):
+    h=(b-a)/3
+    I=(h*3/8)*(f(a)+f(b)+(3*f(a+h))+(3*f(a+(2*h))))
+    return I
+
+def main():
+    I=0;
+    cortes=[0, (math.pi)/4, (math.pi)/2, 3*((math.pi)/4), math.pi, 5*((math.pi)/4), 4];
+    for i in range(0,6):
+        zona=simpson38(cortes[i],cortes[i+1]);
+        I+=zona
+    print("Valor de la integración numérica por Simpson 3/8: ", I)
+    
+main()
