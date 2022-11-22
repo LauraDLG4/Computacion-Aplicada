@@ -1,0 +1,268 @@
+import random
+def crossover (parent0, parent1):
+    if random.random()<0.7: #entonces se cruzan
+        cut=random.randint(0, len(parent0)) #cortas hasta el 22
+        #print("cut: ", cut)
+        offspring0=[]
+        offspring1=[]
+        for i in range(len(parent0)):
+            if i <= cut:
+                offspring0.append(parent0[i])
+                offspring1.append(parent1[i])
+            else:
+                offspring0.append(parent1[i])
+                offspring1.append(parent0[i])
+    else: #no se cruzan
+        #print("No crossover")
+        offspring0=parent0
+        offspring1=parent1
+        
+    #print("off0: ", offspring0)
+    #print("off1: ", offspring1)
+    
+    return offspring0, offspring1
+###########################################################
+import random
+#por si esta atorado en un mínimo local, a ver si mejora
+def mutation(indiv):
+    if random.random()<0.05:
+        x=random.randint(0, (len(indiv)-1)) #quítale en -1
+        #print("mutation ", x)
+        if indiv[x]==1:
+            indiv[x]=0
+        else:
+            indiv[x]=1
+#     else:
+#         print("no mutation")
+    return indiv
+############################################################
+from newindiv import * 
+
+def population (n, c_len): #n es numero de individuos
+    pop= []
+    for i in range(0,n):
+        pop.append(newindiv(c_len))
+    return pop
+############################################################
+import random
+
+def newindiv (c_len): #c_len es el tamaño del cromosoma, los btis
+    indiv= []       
+    for i in range(0,c_len):
+        if random.random()>0.5:
+            indiv.append(1)
+        else:
+            indiv.append(0)
+    return indiv
+############################################################
+import random
+def selection (fit):
+    fit_index=0
+    total_fit=sum(fit)
+    #print(total_fit)
+    pick=random.random()
+    fit_p=[]
+    for i in range(0, len(fit)):
+        fit_p.append((fit[i]/total_fit)) #sacamos su proporción
+    fit_acc=0
+    for i in range (0, len(fit)):
+        fit_acc +=fit_p[i] #sumas las proporciones hasta que llegas al pick
+        if fit_acc>=pick:
+            fit_index=i
+            break  
+    #print(random.uniform(0,totalfit)) #elige num random de 0 a totalfit
+    #print(total_fit)
+    return fit_index
+##############################################################
+def fitness(R):
+    B=4.5e-6
+    Vth=0.69    
+    Ve=[1.00E-07, 2.50E-02, 1.00E-01, 2.25E-01, 4.00E-01, 6.25E-01, 9.00E-01, 1.23E+00, 1.57E+00, 1.84E+00, 2.07E+00]
+    Vgs=[0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+    Vr=[]
+    MSE=0
+    for i in range(len(Vgs)): #V=IR
+        Vr.append((B/2)*(R[0]/R[1])*((Vgs[i]-Vth)**2)*(25*((R[2]+1)*(R[3]))))
+    #print ("Vcalcu", Vr)
+    for i in range(len(Ve)):
+        MSE+=(Ve[i]-Vr[i])**2
+    
+    MSEf=MSE/(len(Ve))
+    #print("MSE", MSEf)
+    
+    return MSEf
+##############################################################    
+def gray2real(indiv):
+    g0=indiv[0:7] #no toma el último
+    g1=indiv[7:14]
+    g2=indiv[14:21]
+    g3=indiv[21:28]
+    
+    b0=[g0[0]]
+    b1=[g1[0]]
+    b2=[g2[0]]
+    b3=[g3[0]]
+    
+    for i in range(6): #cambiar si cambio length del cromosoma
+        b0.append(int(b0[i])^int(g0[i+1])) #^==XOR
+        b1.append(int(b1[i])^int(g1[i+1]))
+        b2.append(int(b2[i])^int(g2[i+1]))
+        b3.append(int(b3[i])^int(g3[i+1]))
+        
+    r0=0
+    r1=0
+    r2=0
+    r3=0
+    
+    for i in range(len(b0)):
+        r0+=b0[i]*2**(6-i)
+        r1+=b1[i]*2**(6-i)
+        r2+=b2[i]*2**(6-i)
+        r3+=b3[i]*2**(6-i)
+    
+    r0=((r0*100e-6)/127) #W  
+    r1=((r1*100e-6)/127)+(100e-6/127) #L #para que no sea 0 nunca
+    r2=int(((r2*200)/127)) #m
+    r3=int(((r3*200)/127)) #n
+        
+    R= [r0, r1, r2, r3] #mis 4 variables
+    
+    return R
+##############################################################
+import numpy as np
+import matplotlib.pyplot as plt
+from population import *
+from Gray2real import *
+from fitness import *
+from selection import *
+from crossover import *
+from mutation import *
+from newindiv import *
+
+def main():
+    #create initial population
+    n = 32    #num. of individuals
+    c_len = 28 #length of chromosome #4variables
+    g_len = 7  #length of genes
+    pop = population(n,c_len)
+    bestfits_g=[]
+    #######################################
+    print("*** Genetic Algorithm ***")
+    print("Population size:\t",n)
+    print("Chromosome length:\t",c_len)
+    
+    tg=int(input("Cantidad de generaciones: "))
+    for g in range (tg):
+        fit = []
+        for indiv in pop:
+            fit.append(fitness(gray2real(indiv)))
+        
+        fit_index=selection(fit)
+        parent0=pop[fit_index]
+        
+        fit_index=selection(fit)
+        parent1=pop[fit_index]
+        
+        while parent1==parent0:
+            fit_index=selection(fit)
+            parent1=pop[fit_index]
+        
+        offspring0, offspring1=crossover(parent0, parent1)
+        
+        offspring0=mutation(offspring0)
+        offspring1=mutation(offspring1)
+        
+        fitp0=fitness(gray2real(parent0))
+        fitp1=fitness(gray2real(parent1))
+        fito1=fitness(gray2real(offspring0))
+        fito0=fitness(gray2real(offspring1))
+        
+        newpop=[] #selección de off o parents
+        if fito0<= fitp0 or fito0<=fitp1:
+            newpop.append(offspring0)
+        if fito1<= fitp0 or fito1<=fitp1:
+            newpop.append(offspring1)
+        if fitp0<= fito0 or fitp0<=fito1:
+            newpop.append(parent0)
+        if fitp1<= fito0 or fitp1<=fito1:
+            newpop.append(parent0)
+            
+        #incluye el mejor individuo
+        bestfit=min(fit)  #o mínimo
+        bestfits_g.append(bestfit)
+        #print(bestfit)
+        bestindex=fit.index(bestfit) #el índice(en la lista fit(posición)) con la apt max
+        newpop.append(pop[bestindex])
+        #print(newpop)
+        
+        #extended elistism
+        meanfit=np.mean(fit)
+        stddevfit=np.std(fit)
+        for i in range(len(fit)):
+            if fit[i]<meanfit-stddevfit: #- si mínimos
+                newpop.append(pop[i])
+        #fillers
+        while(len(newpop)<n):
+            newpop.append(newindiv(c_len))
+        pop=newpop
+        #print(len(newpop))
+        
+    bestfit=min(fit)
+    bestindex=fit.index(bestfit)
+    sol=gray2real(pop[bestindex])
+    solfit=fitness(sol)
+    #print(sol)
+    print('W: '+str(round(1e6*sol[0],1))+'μm')
+    print('L: '+str(round(1e6*sol[1],1))+'μm')
+    print('m: ', sol[2])
+    print('n: ', sol[3])
+    R = 25*((sol[2]+1)*(sol[3]))         # R(rsq, m, n)
+    print("R:", R, 'Ω')
+    plt.figure(1)
+    plt.plot(bestfits_g)
+    print("EMC: ", solfit)
+    plt.show()
+    
+main()
+################################################################
+from matplotlib import pyplot as plt
+#Resistor voltage measured/simulated data
+VR_data = [1.00E-07, 2.50E-02, 1.00E-01, 2.25E-01, 4.00E-01, 6.25E-01, \
+            9.00E-01, 1.23E+00, 1.57E+00, 1.84E+00, 2.07E+00]
+#gate-to-source voltage sweep  
+VGS = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+#fixed parameters
+VDS = 5         #drain-to-source voltage  
+VT = 0.69       #treshold voltage (for silicon)
+beta = 4.5e-6   #transistor's beta 
+rsq = 25        #sheet resistance, ohms per square
+#transistor variables
+W = 72.4e-5        #gate width
+L = 55.1e-5       #gate length
+print('W: '+str(round(1e6*W,1))+'μm\t'+'L: '+str(round(1e6*L,1))+'μm')
+#resistor
+m = 26         #resistor squares per line
+n = 64        #resistor lines
+R = rsq*((m+1)*(n))         # R(rsq, m, n)
+print("R:", R, 'Ω')
+#transistor's drain current I_D (for each V_GS value)
+#resistor voltage V_R = I_D * R
+VR = []
+for i in range(len(VGS)):
+    if VGS[i] <= VT:
+        ID = 0.0
+    else:
+        ID = (beta/2)*(W/L)*((VGS[i]-VT)**2)
+    VR.append(R*ID)
+# mean square error
+MSE = 0.0
+print("mean sq error: ", round(MSE, 7))
+plt.figure(1)
+plt.plot(VGS,VR_data)
+plt.plot(VGS,VR)
+plt.grid()
+plt.legend(['data','calculated'])
+plt.title('$V_R$ vs $V_{GS}$')
+plt.ylabel('resistor voltage (V)')
+plt.xlabel('gate-to-source voltage (V)')
+plt.show()
